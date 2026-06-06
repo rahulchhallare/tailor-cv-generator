@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tailor CV Generator</title>
 <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
+<script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://unpkg.com/mammoth@1.6.0/mammoth.browser.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
   :root {
@@ -180,8 +182,8 @@
       <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
         <div class="upload-zone-icon">📄</div>
         <p>Drop your CV file here or <span>browse</span></p>
-        <p style="font-size:12px;margin-top:6px">Supports .txt, .md files</p>
-        <input type="file" id="fileInput" accept=".txt,.md" onchange="handleFileUpload(event)">
+        <p style="font-size:12px;margin-top:6px">Supports .pdf, .docx, .txt, .md</p>
+        <input type="file" id="fileInput" accept=".txt,.md,.pdf,.doc,.docx" onchange="handleFileUpload(event)">
       </div>
       <textarea id="uploadedText" style="min-height:120px;display:none" placeholder="File content will appear here — you can edit it..."></textarea>
     </div>
@@ -316,17 +318,37 @@ function handleDrop(e){
   if(file) readFile(file);
 }
 function handleFileUpload(e){const file=e.target.files[0];if(file)readFile(file);}
-function readFile(file){
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const text=e.target.result;
+async function readFile(file){
+  const zone=document.getElementById('uploadZone');
+  zone.innerHTML='<div class="upload-zone-icon"><div class="spinner"></div></div><p style="color:var(--muted)">Reading file...</p>';
+  try{
+    let text='';
+    const ext=file.name.split('.').pop().toLowerCase();
+    if(ext==='pdf'){
+      pdfjsLib.GlobalWorkerOptions.workerSrc='https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      const buf=await file.arrayBuffer();
+      const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+      for(let i=1;i<=pdf.numPages;i++){
+        const page=await pdf.getPage(i);
+        const content=await page.getTextContent();
+        text+=content.items.map(s=>s.str).join(' ')+'\n';
+      }
+    } else if(ext==='docx'||ext==='doc'){
+      const buf=await file.arrayBuffer();
+      const result=await mammoth.extractRawText({arrayBuffer:buf});
+      text=result.value;
+    } else {
+      text=await file.text();
+    }
     document.getElementById('uploadedText').value=text;
     document.getElementById('uploadedText').style.display='block';
-    const zone=document.getElementById('uploadZone');
     zone.className='upload-zone file-loaded';
-    zone.innerHTML=`<div class="upload-zone-icon">✅</div><p style="color:var(--success)">${file.name} loaded (${(file.size/1024).toFixed(1)}KB)</p>`;
-  };
-  reader.readAsText(file);
+    zone.innerHTML='<div class="upload-zone-icon">✅</div><p style="color:var(--success)">'+file.name+' loaded ('+( file.size/1024).toFixed(1)+'KB \u00b7 '+text.split(' ').length+' words extracted)</p>';
+  }catch(err){
+    zone.className='upload-zone';
+    zone.innerHTML='<div class="upload-zone-icon">📄</div><p style="color:var(--error)">Failed to read: '+err.message+'</p><p style="font-size:12px;margin-top:6px">Supports .pdf, .docx, .txt, .md</p>';
+    console.error(err);
+  }
 }
 
 // ── Get CV data for current mode ──────────────────────────────────────────────
