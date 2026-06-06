@@ -7,507 +7,195 @@
 <script src="https://unpkg.com/docx@8.5.0/build/index.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
-
   :root {
-    --navy: #1F4E79;
-    --navy-light: #2563A8;
-    --accent: #00D4AA;
-    --bg: #0A0F1C;
-    --surface: #111827;
-    --surface2: #1C2434;
-    --border: #2A3548;
-    --text: #E8EDF5;
-    --muted: #7B8FA6;
-    --success: #10B981;
-    --warn: #F59E0B;
-    --error: #EF4444;
+    --navy:#1F4E79;--navy-light:#2563A8;--accent:#00D4AA;--bg:#0A0F1C;
+    --surface:#111827;--surface2:#1C2434;--border:#2A3548;
+    --text:#E8EDF5;--muted:#7B8FA6;--success:#10B981;--error:#EF4444;
   }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(31,78,121,0.08) 1px,transparent 1px),linear-gradient(90deg,rgba(31,78,121,0.08) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+  .container{max-width:960px;margin:0 auto;padding:40px 24px;position:relative;z-index:1;}
+  header{text-align:center;margin-bottom:48px;animation:fadeDown 0.6s ease both;}
+  .badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);color:var(--accent);font-family:'Space Mono',monospace;font-size:11px;padding:6px 14px;border-radius:100px;margin-bottom:20px;letter-spacing:0.08em;}
+  .badge::before{content:'◆';font-size:8px;}
+  h1{font-family:'Space Mono',monospace;font-size:clamp(26px,5vw,40px);font-weight:700;color:var(--text);line-height:1.15;margin-bottom:12px;}
+  h1 span{color:var(--accent);}
+  .subtitle{color:var(--muted);font-size:15px;max-width:500px;margin:0 auto;line-height:1.6;}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  /* Mode toggle */
+  .mode-toggle{display:flex;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:6px;margin-bottom:24px;}
+  .mode-btn{flex:1;padding:10px 16px;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;color:var(--muted);background:transparent;}
+  .mode-btn.active{background:var(--navy);color:white;}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+  /* Cards */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:20px;animation:fadeUp 0.5s ease both;}
+  .section-label{font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .section-label::after{content:'';flex:1;height:1px;background:var(--border);}
 
-  /* Grid background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(31,78,121,0.08) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(31,78,121,0.08) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
+  /* Profile panel */
+  .profile-panel{display:none;}
+  .profile-panel.visible{display:block;}
+  .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  @media(max-width:600px){.profile-grid{grid-template-columns:1fr;}}
+  input[type=text],input[type=email],input[type=tel]{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:10px 14px;border-radius:8px;outline:none;transition:border-color 0.2s;}
+  input:focus{border-color:var(--accent);}
+  input::placeholder{color:var(--muted);}
+  .input-label{font-size:12px;color:var(--muted);margin-bottom:6px;display:block;}
 
-  .container {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 40px 24px;
-    position: relative;
-    z-index: 1;
-  }
+  /* Textarea */
+  textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.6;padding:16px;border-radius:10px;resize:vertical;outline:none;transition:border-color 0.2s;}
+  textarea:focus{border-color:var(--accent);}
+  textarea::placeholder{color:var(--muted);}
 
-  /* Header */
-  header {
-    text-align: center;
-    margin-bottom: 48px;
-    animation: fadeDown 0.6s ease both;
-  }
+  /* File upload */
+  .upload-zone{border:2px dashed var(--border);border-radius:10px;padding:32px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--surface2);margin-bottom:14px;}
+  .upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:rgba(0,212,170,0.05);}
+  .upload-zone-icon{font-size:32px;margin-bottom:10px;}
+  .upload-zone p{color:var(--muted);font-size:14px;}
+  .upload-zone p span{color:var(--accent);cursor:pointer;}
+  .upload-zone input{display:none;}
+  .file-loaded{background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.4);color:var(--success);}
 
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(0,212,170,0.1);
-    border: 1px solid rgba(0,212,170,0.3);
-    color: var(--accent);
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    padding: 6px 14px;
-    border-radius: 100px;
-    margin-bottom: 20px;
-    letter-spacing: 0.08em;
-  }
-
-  .badge::before { content: '◆'; font-size: 8px; }
-
-  h1 {
-    font-family: 'Space Mono', monospace;
-    font-size: clamp(28px, 5vw, 42px);
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.15;
-    margin-bottom: 12px;
-  }
-
-  h1 span { color: var(--accent); }
-
-  .subtitle {
-    color: var(--muted);
-    font-size: 15px;
-    font-weight: 300;
-    max-width: 500px;
-    margin: 0 auto;
-    line-height: 1.6;
-  }
-
-  /* API Key section */
-  .api-section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 24px;
-    margin-bottom: 24px;
-    animation: fadeUp 0.5s ease 0.1s both;
-  }
-
-  .section-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--accent);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .section-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  .api-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-
-  input[type="password"], input[type="text"] {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    padding: 10px 14px;
-    border-radius: 8px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  input:focus { border-color: var(--accent); }
-
-  .btn-sm {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    padding: 10px 16px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-
-  .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
-
-  .api-note {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 8px;
-  }
-
-  .api-note a { color: var(--accent); text-decoration: none; }
-
-  /* Main card */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px;
-    margin-bottom: 20px;
-    animation: fadeUp 0.5s ease 0.2s both;
-  }
-
-  textarea {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    line-height: 1.6;
-    padding: 16px;
-    border-radius: 10px;
-    resize: vertical;
-    min-height: 260px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  textarea:focus { border-color: var(--accent); }
-  textarea::placeholder { color: var(--muted); }
-
-  /* Options row */
-  .options-row {
-    display: flex;
-    gap: 12px;
-    margin-top: 16px;
-    flex-wrap: wrap;
-  }
-
-  .select-wrap {
-    flex: 1;
-    min-width: 160px;
-  }
-
-  select {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    padding: 10px 14px;
-    border-radius: 8px;
-    outline: none;
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237B8FA6' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-  }
+  /* Options */
+  .options-row{display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;}
+  .select-wrap{flex:1;min-width:160px;}
+  select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:10px 14px;border-radius:8px;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237B8FA6' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;}
 
   /* Generate button */
-  .btn-generate {
-    width: 100%;
-    background: linear-gradient(135deg, var(--navy), var(--navy-light));
-    border: none;
-    color: white;
-    font-family: 'Space Mono', monospace;
-    font-size: 14px;
-    font-weight: 700;
-    padding: 16px 24px;
-    border-radius: 10px;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: all 0.3s;
-    position: relative;
-    overflow: hidden;
-    letter-spacing: 0.05em;
-  }
-
-  .btn-generate::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, var(--accent), var(--navy-light));
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .btn-generate:hover::before { opacity: 1; }
-  .btn-generate span { position: relative; z-index: 1; }
-  .btn-generate:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-generate{width:100%;background:linear-gradient(135deg,var(--navy),var(--navy-light));border:none;color:white;font-family:'Space Mono',monospace;font-size:14px;font-weight:700;padding:16px 24px;border-radius:10px;cursor:pointer;margin-top:20px;transition:all 0.3s;position:relative;overflow:hidden;letter-spacing:0.05em;}
+  .btn-generate::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent),var(--navy-light));opacity:0;transition:opacity 0.3s;}
+  .btn-generate:hover::before{opacity:1;}
+  .btn-generate span{position:relative;z-index:1;}
+  .btn-generate:disabled{opacity:0.5;cursor:not-allowed;}
 
   /* Progress */
-  .progress-section {
-    display: none;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px;
-    margin-bottom: 20px;
-    animation: fadeUp 0.4s ease both;
-  }
-
-  .progress-section.visible { display: block; }
-
-  .progress-title {
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    color: var(--accent);
-    margin-bottom: 20px;
-  }
-
-  .step {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 14px;
-    color: var(--muted);
-    transition: color 0.3s;
-  }
-
-  .step:last-child { border-bottom: none; }
-  .step.active { color: var(--text); }
-  .step.done { color: var(--success); }
-  .step.error-step { color: var(--error); }
-
-  .step-icon {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 12px;
-    flex-shrink: 0;
-    font-family: 'Space Mono', monospace;
-    transition: all 0.3s;
-  }
-
-  .step.active .step-icon {
-    border-color: var(--accent);
-    color: var(--accent);
-    animation: pulse 1.5s infinite;
-  }
-
-  .step.done .step-icon {
-    background: var(--success);
-    border-color: var(--success);
-    color: white;
-  }
-
-  .step.error-step .step-icon {
-    background: var(--error);
-    border-color: var(--error);
-    color: white;
-  }
-
-  /* ATS Score */
-  .ats-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(16,185,129,0.1);
-    border: 1px solid rgba(16,185,129,0.3);
-    color: var(--success);
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    margin-top: 16px;
-  }
+  .progress-section{display:none;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:20px;}
+  .progress-section.visible{display:block;}
+  .step{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--muted);transition:color 0.3s;}
+  .step:last-child{border-bottom:none;}
+  .step.active{color:var(--text);}
+  .step.done{color:var(--success);}
+  .step.error-step{color:var(--error);}
+  .step-icon{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;font-family:'Space Mono',monospace;transition:all 0.3s;}
+  .step.active .step-icon{border-color:var(--accent);color:var(--accent);animation:pulse 1.5s infinite;}
+  .step.done .step-icon{background:var(--success);border-color:var(--success);color:white;}
+  .step.error-step .step-icon{background:var(--error);border-color:var(--error);color:white;}
 
   /* Result */
-  .result-section {
-    display: none;
-    background: var(--surface);
-    border: 1px solid rgba(0,212,170,0.3);
-    border-radius: 16px;
-    padding: 28px;
-    margin-bottom: 20px;
-    animation: fadeUp 0.4s ease both;
-  }
+  .result-section{display:none;background:var(--surface);border:1px solid rgba(0,212,170,0.3);border-radius:16px;padding:28px;margin-bottom:20px;}
+  .result-section.visible{display:block;}
+  .result-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap;}
+  .result-title{font-family:'Space Mono',monospace;font-size:15px;color:var(--accent);margin-bottom:8px;}
+  .ats-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:var(--success);font-family:'Space Mono',monospace;font-size:13px;padding:8px 16px;border-radius:8px;}
+  .btn-download{display:flex;align-items:center;gap:10px;background:var(--accent);color:#0A0F1C;font-family:'Space Mono',monospace;font-size:13px;font-weight:700;padding:12px 22px;border-radius:8px;border:none;cursor:pointer;transition:all 0.2s;}
+  .btn-download:hover{background:#00f0c0;transform:translateY(-1px);}
+  .tailoring-notes{background:var(--surface2);border-radius:10px;padding:16px;font-size:13px;line-height:1.7;color:var(--muted);white-space:pre-wrap;}
+  .info-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;}
+  .pill{background:var(--surface2);border:1px solid rgba(0,212,170,0.3);color:var(--accent);font-size:12px;padding:5px 12px;border-radius:100px;font-family:'Space Mono',monospace;}
 
-  .result-section.visible { display: block; }
+  .error-box{display:none;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:16px;font-size:13px;margin-top:16px;}
+  .error-box.visible{display:block;color:var(--error);}
 
-  .result-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-    flex-wrap: gap;
-    gap: 12px;
-  }
+  /* Tabs inside upload mode */
+  .input-tabs{display:flex;gap:6px;margin-bottom:14px;}
+  .tab-btn{padding:7px 16px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--muted);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+  .tab-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,170,0.05);}
+  .tab-content{display:none;}
+  .tab-content.active{display:block;}
 
-  .result-title {
-    font-family: 'Space Mono', monospace;
-    font-size: 15px;
-    color: var(--accent);
-  }
+  /* Pre-fill notice */
+  .prefill-notice{background:rgba(0,212,170,0.07);border:1px solid rgba(0,212,170,0.2);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+  .prefill-notice strong{color:var(--accent);}
 
-  .btn-download {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--accent);
-    color: #0A0F1C;
-    font-family: 'Space Mono', monospace;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 12px 22px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-decoration: none;
-  }
-
-  .btn-download:hover { background: #00f0c0; transform: translateY(-1px); }
-
-  .tailoring-notes {
-    background: var(--surface2);
-    border-radius: 10px;
-    padding: 16px;
-    font-size: 13px;
-    line-height: 1.7;
-    color: var(--muted);
-    white-space: pre-wrap;
-  }
-
-  .tailoring-notes strong { color: var(--text); }
-
-  /* Error */
-  .error-box {
-    display: none;
-    background: rgba(239,68,68,0.1);
-    border: 1px solid rgba(239,68,68,0.3);
-    border-radius: 10px;
-    padding: 16px;
-    color: var(--error);
-    font-size: 13px;
-    margin-top: 16px;
-  }
-  .error-box.visible { display: block; }
-
-  /* Info pills */
-  .info-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 20px;
-  }
-
-  .pill {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-size: 12px;
-    padding: 5px 12px;
-    border-radius: 100px;
-    font-family: 'Space Mono', monospace;
-  }
-
-  .pill.highlight {
-    border-color: rgba(0,212,170,0.3);
-    color: var(--accent);
-    background: rgba(0,212,170,0.05);
-  }
-
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(0,212,170,0.4); }
-    50% { box-shadow: 0 0 0 6px rgba(0,212,170,0); }
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  .spinner {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border: 2px solid rgba(0,212,170,0.3);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-
-  footer {
-    text-align: center;
-    color: var(--muted);
-    font-size: 12px;
-    padding: 20px 0 40px;
-    font-family: 'Space Mono', monospace;
-  }
+  @keyframes fadeDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(0,212,170,0.4)}50%{box-shadow:0 0 0 6px rgba(0,212,170,0)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(0,212,170,0.3);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:20px 0 40px;font-family:'Space Mono',monospace;}
 </style>
 </head>
 <body>
 <div class="container">
 
   <header>
-    <div class="badge">TAILOR CV ENGINE</div>
+    <div class="badge">AI-POWERED</div>
     <h1>Tailor CV<br><span>Generator</span></h1>
     <p class="subtitle">Paste a job description. Get a tailored ATS-optimised .docx CV in seconds.</p>
   </header>
 
-  <!-- API Key (hidden - hardcoded) -->
-  <div class="api-section" style="display:none">
-    <div class="section-label">Anthropic API Key</div>
-    <div class="api-row">
-      <input type="password" id="apiKey" placeholder="sk-ant-api03-..." />
-      <button class="btn-sm" onclick="toggleKey()">Show</button>
-      <button class="btn-sm" onclick="saveKey()">Save</button>
+  <!-- Mode Toggle -->
+  <div class="mode-toggle">
+    <button class="mode-btn active" onclick="setMode('mine')" id="modeMyCV">⚡ Use My CV (Rahul)</button>
+    <button class="mode-btn" onclick="setMode('custom')" id="modeCustom">📄 Upload Your CV</button>
+  </div>
+
+  <!-- My CV mode notice -->
+  <div class="prefill-notice" id="prefillNotice">
+    <span>✓</span>
+    <div><strong>Rahul Chhallare's CV pre-loaded.</strong> Just paste a JD below and generate.</div>
+  </div>
+
+  <!-- Custom CV panel -->
+  <div class="card profile-panel" id="customPanel">
+    <div class="section-label">Your Profile</div>
+
+    <!-- Basic Info -->
+    <div class="profile-grid">
+      <div>
+        <label class="input-label">Full Name *</label>
+        <input type="text" id="userName" placeholder="e.g. Jane Smith" />
+      </div>
+      <div>
+        <label class="input-label">Email *</label>
+        <input type="email" id="userEmail" placeholder="jane@example.com" />
+      </div>
+      <div>
+        <label class="input-label">Phone</label>
+        <input type="tel" id="userPhone" placeholder="+1 555 000 0000" />
+      </div>
+      <div>
+        <label class="input-label">LinkedIn</label>
+        <input type="text" id="userLinkedin" placeholder="linkedin.com/in/janesmith" />
+      </div>
+      <div>
+        <label class="input-label">Location</label>
+        <input type="text" id="userLocation" placeholder="New York, USA (Remote)" />
+      </div>
     </div>
-    <p class="api-note">Your key is stored locally in this browser only. Get one at <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></p>
+
+    <!-- CV Content -->
+    <div class="section-label" style="margin-top:8px">CV Content</div>
+    <div class="input-tabs">
+      <button class="tab-btn active" onclick="switchTab('paste')">📋 Paste CV Text</button>
+      <button class="tab-btn" onclick="switchTab('upload')">📁 Upload File (.txt / .md)</button>
+    </div>
+
+    <div class="tab-content active" id="tabPaste">
+      <textarea id="cvText" style="min-height:200px" placeholder="Paste your full CV/resume text here...&#10;&#10;Include: work experience with dates, education, skills, certifications.&#10;The more detail, the better the tailoring."></textarea>
+    </div>
+
+    <div class="tab-content" id="tabUpload">
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+        <div class="upload-zone-icon">📄</div>
+        <p>Drop your CV file here or <span>browse</span></p>
+        <p style="font-size:12px;margin-top:6px">Supports .txt, .md files</p>
+        <input type="file" id="fileInput" accept=".txt,.md" onchange="handleFileUpload(event)">
+      </div>
+      <textarea id="uploadedText" style="min-height:120px;display:none" placeholder="File content will appear here — you can edit it..."></textarea>
+    </div>
   </div>
 
   <!-- JD Input -->
   <div class="card">
     <div class="section-label">Job Description</div>
-    <textarea id="jdInput" placeholder="Paste the full job description here...&#10;&#10;Include: role title, company name, responsibilities, requirements, nice-to-haves.&#10;The more detail you paste, the better the tailoring."></textarea>
+    <textarea id="jdInput" style="min-height:220px" placeholder="Paste the full job description here...&#10;&#10;Include: role title, company, responsibilities, requirements.&#10;The more detail you paste, the better the tailoring."></textarea>
 
     <div class="options-row">
       <div class="select-wrap">
         <select id="colorTheme">
-          <option value="navy">Navy Blue (Default)</option>
+          <option value="navy">Navy Blue</option>
           <option value="teal">Teal</option>
           <option value="dark">Dark Slate</option>
         </select>
@@ -523,29 +211,16 @@
     <button class="btn-generate" onclick="generateCV()" id="generateBtn">
       <span>⚡ GENERATE TAILORED CV</span>
     </button>
-
     <div class="error-box" id="errorBox"></div>
   </div>
 
   <!-- Progress -->
   <div class="progress-section" id="progressSection">
-    <div class="progress-title">// GENERATING CV</div>
-    <div class="step" id="step1">
-      <div class="step-icon">1</div>
-      <span>Analysing job description & extracting keywords</span>
-    </div>
-    <div class="step" id="step2">
-      <div class="step-icon">2</div>
-      <span>Selecting base template & tailoring content</span>
-    </div>
-    <div class="step" id="step3">
-      <div class="step-icon">3</div>
-      <span>Building .docx file with formatting</span>
-    </div>
-    <div class="step" id="step4">
-      <div class="step-icon">4</div>
-      <span>Calculating ATS score</span>
-    </div>
+    <div style="font-family:'Space Mono',monospace;font-size:13px;color:var(--accent);margin-bottom:20px">// GENERATING CV</div>
+    <div class="step" id="step1"><div class="step-icon">1</div><span>Analysing job description & extracting keywords</span></div>
+    <div class="step" id="step2"><div class="step-icon">2</div><span>Selecting base template & tailoring content</span></div>
+    <div class="step" id="step3"><div class="step-icon">3</div><span>Building .docx file with formatting</span></div>
+    <div class="step" id="step4"><div class="step-icon">4</div><span>Calculating ATS score</span></div>
   </div>
 
   <!-- Result -->
@@ -553,11 +228,9 @@
     <div class="result-header">
       <div>
         <div class="result-title">// CV READY</div>
-        <div id="atsBadge" class="ats-badge">✓ ATS Score: calculating...</div>
+        <div id="atsBadge" class="ats-badge">✓ ATS Score: —</div>
       </div>
-      <button class="btn-download" id="downloadBtn">
-        ⬇ Download .docx
-      </button>
+      <button class="btn-download" id="downloadBtn">⬇ Download .docx</button>
     </div>
     <div class="section-label" style="margin-bottom:12px">Tailoring Notes</div>
     <div class="tailoring-notes" id="tailoringNotes"></div>
@@ -568,499 +241,362 @@
 </div>
 
 <script>
-// ─── Master CV Data ──────────────────────────────────────────────────────────
+// ── Rahul's master CV data ────────────────────────────────────────────────────
 const RAHUL = {
-  name: "RAHUL CHHALLARE",
-  email: "rchhallare9@gmail.com",
-  phone: "+91-9561745581",
-  linkedin: "linkedin.com/in/rahul_chhallare",
-  location: "Pune, India (Remote)",
-
-  experience: [
-    {
-      title: "AI PM Instructor",
-      company: "Eduinx / CAIPM",
-      location: "Remote",
-      start: "Sep 2025",
-      end: "Present",
-      bullets: [
-        "Designed and delivered 10-module AI Product Manager certification curriculum for 15+ students covering LLM evaluation, agentic system design, HITL patterns, observability, and enterprise AI deployment.",
-        "Created hands-on labs on autonomous agent workflows, tool-use integrations, and conversational AI product strategy using Cursor, Claude Code, n8n, and Make.com."
-      ]
-    },
-    {
-      title: "Founder & AI Product Manager",
-      company: "AIAgentStudio.ai",
-      location: "Remote",
-      start: "Apr 2025",
-      end: "May 2026",
-      bullets: [
-        "Built a no-code visual AI agent platform for multi-agent orchestration across GPT-4, Claude, and Gemini; designed IaaS/PaaS/SaaS layered architecture with creator marketplace for agent templates.",
-        "Architected LLM evaluation framework with tiered inference routing and context-window optimisation; implemented MCP-compatible tool-use integrations and agentic workflow patterns (ReAct, CoT, tool chaining).",
-        "Defined agent observability requirements: tracing, logging, and failure recovery patterns for production-grade agent deployments; designed graceful HITL escalation and context handoff flows.",
-        "Owned full product lifecycle: problem discovery, spec writing, sprint planning, delivery coordination, and post-release monitoring with quarterly roadmap inputs and weekly execution reviews.",
-        "Conducted competitive analysis across LangChain, LangGraph, n8n, Relevance AI, and Gumloop to define differentiation strategy and go-to-market positioning."
-      ]
-    },
-    {
-      title: "AI Business Fellow",
-      company: "Perplexity AI",
-      location: "Remote",
-      start: "Mar 2025",
-      end: "Sep 2025",
-      bullets: [
-        "Gained frontier exposure to AI-native product strategy at a leading conversational AI company; contributed to product thinking on LLM-powered search and developer API adoption patterns.",
-        "Analysed agent reasoning quality, latency tradeoffs, and context-window management challenges across production AI systems."
-      ]
-    },
-    {
-      title: "Senior Digital Product Owner",
-      company: "TVS Motor Company",
-      location: "Chennai",
-      start: "Feb 2023",
-      end: "Mar 2025",
-      bullets: [
-        "Owned end-to-end product strategy for AI-powered sales chatbot integrated with Salesforce CRM via REST API; deployed across digital touchpoints serving 1M+ annual visitors.",
-        "Shipped prompt-engineering layer with context-window optimisation and A/B-tested inference routing — achieving 36% uplift in qualified digital leads and 1.32× revenue impact within 6 months.",
-        "Led AI Video Analytics product end-to-end: defined requirements, selected vendor, set KPIs — uncovered buying signals that boosted sales conversion by 2.4%.",
-        "Drove website revamp reducing page load time from 8s to 3s, driving 18% lead growth and 3x revenue improvement.",
-        "Reduced inbound call volume by 25% through intelligent FAQ deflection and dynamic lead-qualification workflows.",
-        "Led cross-functional squads (Engineering, Design, CRM, Marketing, CS); aligned C-suite stakeholders on roadmap priorities and tradeoff decisions monthly."
-      ]
-    },
-    {
-      title: "Product Manager",
-      company: "3rdFlix Visual Effects Pvt. Ltd.",
-      location: "India",
-      start: "Dec 2021",
-      end: "Dec 2022",
-      bullets: [
-        "Improved conversion rate by 20 bps and reduced churn by 10 bps through data-driven A/B testing; increased customer LTV by 32% via pricing experiments.",
-        "Scaled Seek Help feature to 125K+ DAUs within 6 months; drove 15% MAU growth through user-interview-led product iteration."
-      ]
-    },
-    {
-      title: "Founder",
-      company: "RAC Innovation",
-      location: "India",
-      start: "Jan 2020",
-      end: "Nov 2021",
-      bullets: [
-        "Founded AI-powered skill-gap analysis platform; delivered full web platform within 3 months from user research to launch, increasing user retention by 18%.",
-        "Defined product strategy, designed wireframes in Figma, and executed go-to-market independently."
-      ]
-    },
-    {
-      title: "Associate Product Manager",
-      company: "ITQ GmbH",
-      location: "Erlangen-Nuremberg, Germany",
-      start: "Jan 2019",
-      end: "Dec 2019",
-      bullets: [
-        "Led product design for BASys 4.2 (Industry 4.0 digital transformation platform); delivered full business model and PRD, driving 12% increase in free trial activation and 32% UX satisfaction improvement."
-      ]
-    },
-    {
-      title: "Product Developer",
-      company: "ITQ GmbH",
-      location: "Las Palmas, Spain",
-      start: "Aug 2017",
-      end: "Feb 2018",
-      bullets: [
-        "Developed roadmaps and launch plans for Farmbot, Industrial Bin Picking Robot, and Home Automation products using Agile/Scrum methodology."
-      ]
-    },
-    {
-      title: "Product Developer",
-      company: "CentPro India Pvt. Ltd.",
-      location: "Pune",
-      start: "Aug 2013",
-      end: "Aug 2016",
-      bullets: [
-        "Managed full product lifecycle for engineering solutions — defined strategy, analysed requirements, and led cross-functional delivery teams."
-      ]
-    }
+  name:"RAHUL CHHALLARE",email:"rchhallare9@gmail.com",phone:"+91-9561745581",
+  linkedin:"linkedin.com/in/rahul_chhallare",location:"Pune, India (Remote)",
+  experience:[
+    {title:"AI PM Instructor",company:"Eduinx / CAIPM",location:"Remote",start:"Sep 2025",end:"Present",
+     bullets:["Designed and delivered 10-module AI Product Manager certification curriculum for 15+ students covering LLM evaluation, agentic system design, HITL patterns, observability, and enterprise AI deployment.","Created hands-on labs on autonomous agent workflows, tool-use integrations, and conversational AI product strategy using Cursor, Claude Code, n8n, and Make.com."]},
+    {title:"Founder & AI Product Manager",company:"AIAgentStudio.ai",location:"Remote",start:"Apr 2025",end:"May 2026",
+     bullets:["Built a no-code visual AI agent platform for multi-agent orchestration across GPT-4, Claude, and Gemini; designed IaaS/PaaS/SaaS layered architecture with creator marketplace for agent templates.","Architected LLM evaluation framework with tiered inference routing and context-window optimisation; implemented MCP-compatible tool-use integrations and agentic workflow patterns (ReAct, CoT, tool chaining).","Defined agent observability requirements: tracing, logging, and failure recovery for production-grade deployments; designed HITL escalation and context handoff flows.","Owned full product lifecycle: problem discovery, spec writing, sprint planning, delivery coordination, and post-release monitoring with quarterly roadmap inputs and weekly execution reviews.","Conducted competitive analysis across LangChain, LangGraph, n8n, Relevance AI, and Gumloop to define differentiation strategy and go-to-market positioning."]},
+    {title:"AI Business Fellow",company:"Perplexity AI",location:"Remote",start:"Mar 2025",end:"Sep 2025",
+     bullets:["Gained frontier exposure to AI-native product strategy at a leading conversational AI company; contributed to product thinking on LLM-powered search and developer API adoption patterns.","Analysed agent reasoning quality, latency tradeoffs, and context-window management challenges across production AI systems."]},
+    {title:"Senior Digital Product Owner",company:"TVS Motor Company",location:"Chennai",start:"Feb 2023",end:"Mar 2025",
+     bullets:["Owned end-to-end product strategy for AI-powered sales chatbot integrated with Salesforce CRM via REST API; deployed across digital touchpoints serving 1M+ annual visitors.","Shipped prompt-engineering layer with context-window optimisation and A/B-tested inference routing — achieving 36% uplift in qualified digital leads and 1.32× revenue impact within 6 months.","Led AI Video Analytics product end-to-end: defined requirements, selected vendor, set KPIs — boosted sales conversion by 2.4%.","Drove website revamp reducing page load time from 8s to 3s, driving 18% lead growth and 3x revenue improvement.","Reduced inbound call volume by 25% through intelligent FAQ deflection and dynamic lead-qualification workflows.","Led cross-functional squads (Engineering, Design, CRM, Marketing, CS); aligned C-suite stakeholders on roadmap priorities monthly."]},
+    {title:"Product Manager",company:"3rdFlix Visual Effects Pvt. Ltd.",location:"India",start:"Dec 2021",end:"Dec 2022",
+     bullets:["Improved conversion rate by 20 bps and reduced churn by 10 bps through data-driven A/B testing; increased customer LTV by 32% via pricing experiments.","Scaled Seek Help feature to 125K+ DAUs within 6 months; drove 15% MAU growth through user-interview-led product iteration."]},
+    {title:"Founder",company:"RAC Innovation",location:"India",start:"Jan 2020",end:"Nov 2021",
+     bullets:["Founded AI-powered skill-gap analysis platform; delivered full web platform within 3 months from user research to launch, increasing user retention by 18%.","Defined product strategy, designed wireframes in Figma, and executed go-to-market independently."]},
+    {title:"Associate Product Manager",company:"ITQ GmbH",location:"Erlangen-Nuremberg, Germany",start:"Jan 2019",end:"Dec 2019",
+     bullets:["Led product design for BASys 4.2 (Industry 4.0 digital transformation platform); delivered full business model and PRD, driving 12% increase in free trial activation and 32% UX satisfaction improvement."]},
+    {title:"Product Developer",company:"ITQ GmbH",location:"Las Palmas, Spain",start:"Aug 2017",end:"Feb 2018",
+     bullets:["Developed roadmaps and launch plans for Farmbot, Industrial Bin Picking Robot, and Home Automation products using Agile/Scrum methodology."]},
+    {title:"Product Developer",company:"CentPro India Pvt. Ltd.",location:"Pune",start:"Aug 2013",end:"Aug 2016",
+     bullets:["Managed full product lifecycle for engineering solutions — defined strategy, analysed requirements, and led cross-functional delivery teams."]}
   ],
-
-  education: [
-    { degree: "MBA, International Management", school: "Technische Hochschule Nürnberg, Germany", date: "Dec 2019" },
-    { degree: "Startup School Graduate S18", school: "Y Combinator", date: "Dec 2018" },
-    { degree: "B.E., Instrumentation Engineering", school: "University of Pune", date: "Jun 2012" }
+  education:[
+    {degree:"MBA, International Management",school:"Technische Hochschule Nürnberg, Germany",date:"Dec 2019"},
+    {degree:"Startup School Graduate S18",school:"Y Combinator",date:"Dec 2018"},
+    {degree:"B.E., Instrumentation Engineering",school:"University of Pune",date:"Jun 2012"}
   ],
-
-  certifications: "Certified Scrum Product Owner\u00ae (CSPO) \u2014 Scrum Alliance",
-
-  technicalSkills: {
-    "AI & Agents": "Multi-agent orchestration, LLM routing (GPT-4/Claude/Gemini), MCP tool-use, ReAct/CoT patterns, prompt engineering, RAG pipelines, HITL escalation, LangChain/LangGraph (conceptual)",
-    "Conversational AI": "Chatbot & copilot design, voice/chat/email channels, context & memory management, Salesforce CRM (REST API), A/B testing, observability & tracing",
-    "Developer Tools": "Cursor, Claude Code, GitHub Copilot; REST/GraphQL APIs, Postman; n8n, Make.com, Zapier; web scraping & data extraction",
-    "Product & Data": "Mixpanel, Google Analytics, Jira, ClickUp, Figma, Miro; SQL (working knowledge); AWS/GCP fundamentals"
+  certifications:"Certified Scrum Product Owner\u00ae (CSPO) \u2014 Scrum Alliance",
+  technicalSkills:{
+    "AI & Agents":"Multi-agent orchestration, LLM routing (GPT-4/Claude/Gemini), MCP tool-use, ReAct/CoT patterns, prompt engineering, RAG pipelines, HITL escalation, LangChain/LangGraph (conceptual)",
+    "Conversational AI":"Chatbot & copilot design, voice/chat/email channels, context & memory management, Salesforce CRM (REST API), A/B testing, observability & tracing",
+    "Developer Tools":"Cursor, Claude Code, GitHub Copilot; REST/GraphQL APIs, Postman; n8n, Make.com, Zapier; web scraping & data extraction",
+    "Product & Data":"Mixpanel, Google Analytics, Jira, ClickUp, Figma, Miro; SQL (working knowledge); AWS/GCP fundamentals"
   }
 };
 
-// ─── Color themes ────────────────────────────────────────────────────────────
-const THEMES = {
-  navy:  { accent: "1F4E79", bg: "EBF3FB" },
-  teal:  { accent: "1A6B5E", bg: "E8F5F2" },
-  dark:  { accent: "2D3748", bg: "EDF2F7" }
-};
+const THEMES={navy:{accent:"1F4E79",bg:"EBF3FB"},teal:{accent:"1A6B5E",bg:"E8F5F2"},dark:{accent:"2D3748",bg:"EDF2F7"}};
 
-// ─── Utility ─────────────────────────────────────────────────────────────────
-function getApiKey() {
-  const _a = 'sk-ant-api03-KUv_Gyz';
-  const _b = 'Sp71V-yNhCQ0gMgO4OVgLcQjStfYcn';
-  const _c = 'RIAP-Tz-1tNg0EIf9ZSh8aLPvqbRH4-iVadpueizlf46Gp_sA-S_OoZAAA';
-  return _a + _b + _c;
+// ── API Key (embedded) ────────────────────────────────────────────────────────
+function getApiKey(){
+  const _a='sk-ant-api03-KUv_Gyz';
+  const _b='Sp71V-yNhCQ0gMgO4OVgLcQjStfYcn';
+  const _c='RIAP-Tz-1tNg0EIf9ZSh8aLPvqbRH4-iVadpueizlf46Gp_sA-S_OoZAAA';
+  return _a+_b+_c;
 }
 
-function saveKey() {
-  const k = document.getElementById('apiKey').value.trim();
-  if (k) { localStorage.setItem('rahul_api_key', k); showMsg('Key saved!'); }
+// ── Mode switching ────────────────────────────────────────────────────────────
+let currentMode = 'mine';
+function setMode(mode){
+  currentMode = mode;
+  document.getElementById('modeMyCV').className = 'mode-btn' + (mode==='mine'?' active':'');
+  document.getElementById('modeCustom').className = 'mode-btn' + (mode==='custom'?' active':'');
+  document.getElementById('customPanel').className = 'card profile-panel' + (mode==='custom'?' visible':'');
+  document.getElementById('prefillNotice').style.display = mode==='mine' ? 'flex' : 'none';
 }
 
-function toggleKey() {
-  const el = document.getElementById('apiKey');
-  el.type = el.type === 'password' ? 'text' : 'password';
+// ── Tab switching ─────────────────────────────────────────────────────────────
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.className='tab-btn'+((['paste','upload'][i]===tab)?' active':''));
+  document.getElementById('tabPaste').className='tab-content'+(tab==='paste'?' active':'');
+  document.getElementById('tabUpload').className='tab-content'+(tab==='upload'?' active':'');
 }
 
-function showMsg(m) {
-  const e = document.getElementById('errorBox');
-  e.textContent = m; e.className = 'error-box visible';
-  e.style.color = 'var(--accent)'; e.style.borderColor = 'rgba(0,212,170,0.3)';
-  setTimeout(() => e.className = 'error-box', 2000);
+// ── File upload ───────────────────────────────────────────────────────────────
+function handleDragOver(e){e.preventDefault();document.getElementById('uploadZone').classList.add('dragover');}
+function handleDragLeave(e){document.getElementById('uploadZone').classList.remove('dragover');}
+function handleDrop(e){
+  e.preventDefault();
+  document.getElementById('uploadZone').classList.remove('dragover');
+  const file=e.dataTransfer.files[0];
+  if(file) readFile(file);
+}
+function handleFileUpload(e){const file=e.target.files[0];if(file)readFile(file);}
+function readFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const text=e.target.result;
+    document.getElementById('uploadedText').value=text;
+    document.getElementById('uploadedText').style.display='block';
+    const zone=document.getElementById('uploadZone');
+    zone.className='upload-zone file-loaded';
+    zone.innerHTML=`<div class="upload-zone-icon">✅</div><p style="color:var(--success)">${file.name} loaded (${(file.size/1024).toFixed(1)}KB)</p>`;
+  };
+  reader.readAsText(file);
 }
 
-function showError(m) {
-  const e = document.getElementById('errorBox');
-  e.textContent = m; e.className = 'error-box visible';
-  e.style.color = 'var(--error)'; e.style.borderColor = 'rgba(239,68,68,0.3)';
+// ── Get CV data for current mode ──────────────────────────────────────────────
+function getCVData(){
+  if(currentMode==='mine') return {type:'structured', data:RAHUL};
+  // Custom mode — gather user inputs
+  const name=document.getElementById('userName').value.trim();
+  const email=document.getElementById('userEmail').value.trim();
+  if(!name||!email){showError('Please enter your name and email.');return null;}
+  const cvText = document.getElementById('tabPaste').classList.contains('active')
+    ? document.getElementById('cvText').value.trim()
+    : document.getElementById('uploadedText').value.trim();
+  if(!cvText){showError('Please paste or upload your CV content.');return null;}
+  return {
+    type:'freetext',
+    name, email,
+    phone:document.getElementById('userPhone').value.trim(),
+    linkedin:document.getElementById('userLinkedin').value.trim(),
+    location:document.getElementById('userLocation').value.trim(),
+    cvText
+  };
 }
 
-function setStep(n, state) {
-  const el = document.getElementById('step' + n);
-  el.className = 'step ' + state;
-  const icon = el.querySelector('.step-icon');
-  if (state === 'active') icon.innerHTML = '<div class="spinner"></div>';
-  else if (state === 'done') icon.textContent = '✓';
-  else if (state === 'error-step') icon.textContent = '✗';
-  else icon.textContent = n;
+function showError(m){
+  const e=document.getElementById('errorBox');
+  e.textContent=m;e.className='error-box visible';
+  e.style.color='var(--error)';e.style.borderColor='rgba(239,68,68,0.3)';
 }
 
-// Load saved key
-window.onload = () => {
-  const k = localStorage.getItem('rahul_api_key');
-  if (k) document.getElementById('apiKey').value = k;
-};
+function setStep(n,state){
+  const el=document.getElementById('step'+n);
+  el.className='step '+state;
+  const icon=el.querySelector('.step-icon');
+  if(state==='active')icon.innerHTML='<div class="spinner"></div>';
+  else if(state==='done')icon.textContent='✓';
+  else if(state==='error-step')icon.textContent='✗';
+  else icon.textContent=n;
+}
 
-// ─── Main generator ───────────────────────────────────────────────────────────
-async function generateCV() {
-  const jd = document.getElementById('jdInput').value.trim();
-  const apiKey = getApiKey();
+// ── Main generator ────────────────────────────────────────────────────────────
+async function generateCV(){
+  const jd=document.getElementById('jdInput').value.trim();
+  if(!jd){showError('Please paste a job description.');return;}
+  const cvData=getCVData();
+  if(!cvData)return;
 
-  if (!jd) { showError('Please paste a job description first.'); return; }
-  if (!apiKey) { showError('Please enter your Anthropic API key.'); return; }
+  const btn=document.getElementById('generateBtn');
+  btn.disabled=true;
+  document.getElementById('errorBox').className='error-box';
+  document.getElementById('progressSection').className='progress-section visible';
+  document.getElementById('resultSection').className='result-section';
+  [1,2,3,4].forEach(n=>setStep(n,'pending'));
 
-  const btn = document.getElementById('generateBtn');
-  btn.disabled = true;
-  document.getElementById('errorBox').className = 'error-box';
-  document.getElementById('progressSection').className = 'progress-section visible';
-  document.getElementById('resultSection').className = 'result-section';
+  try{
+    setStep(1,'active');
 
-  [1,2,3,4].forEach(n => setStep(n, 'pending'));
+    let prompt='';
+    if(cvData.type==='structured'){
+      // Rahul's structured data
+      prompt=`You are an expert ATS CV tailoring system for Rahul Chhallare, an AI Product Manager.
 
-  try {
-    // ── STEP 1: Analyse JD ──────────────────────────────────────────────────
-    setStep(1, 'active');
-
-    const analysisPrompt = `You are an expert ATS CV tailoring system for Rahul Chhallare, an AI Product Manager.
-
-Analyse this job description and return ONLY valid JSON (no markdown, no explanation):
-
+Analyse this job description and return ONLY valid JSON (no markdown):
 {
-  "role_title": "exact role title from JD",
-  "company": "company name",
-  "role_type": "one of: AI_Agent_PM | Conversational_AI_PM | Data_PM | Technical_PM | Product_Owner | General_AI_PM",
-  "headline": "tailored headline for Rahul, max 70 chars",
-  "top_keywords": ["list", "of", "10-15", "most", "important", "ATS", "keywords"],
-  "summary": "2-3 sentence professional summary tailored to this JD, referencing Rahul's actual experience. Mention specific companies/metrics where relevant.",
-  "competencies": {
-    "col1": ["4 competency terms from JD"],
-    "col2": ["4 competency terms from JD"],
-    "col3": ["4 competency terms from JD"]
-  },
-  "prioritised_roles": [0,1,2,3,4,5,6,7,8],
-  "bullet_overrides": {
-    "0": ["optional override bullets for role index 0 if needed"],
-  },
-  "technical_skills_override": {
-    "row1_label": "AI & Agents",
-    "row1_value": "tailored skills list most relevant to this JD",
-    "row2_label": "second most relevant category label",
-    "row2_value": "tailored skills",
-    "row3_label": "third category",
-    "row3_value": "tailored skills",
-    "row4_label": "fourth category",
-    "row4_value": "tailored skills"
-  },
-  "ats_score": 92,
-  "tailoring_notes": "3-4 bullet points explaining how CV was tailored, what keywords matched, why this base was chosen"
+  "role_title":"exact role title",
+  "company":"company name",
+  "headline":"tailored headline max 70 chars",
+  "top_keywords":["10-15 ATS keywords"],
+  "summary":"2-3 sentence summary referencing Rahul's actual experience and metrics",
+  "competencies":{"col1":["4 terms"],"col2":["4 terms"],"col3":["4 terms"]},
+  "prioritised_roles":[0,1,2,3,4,5,6,7,8],
+  "technical_skills_override":{"row1_label":"label","row1_value":"skills","row2_label":"label","row2_value":"skills","row3_label":"label","row3_value":"skills","row4_label":"label","row4_value":"skills"},
+  "ats_score":93,
+  "tailoring_notes":"3-4 bullet points on how CV was tailored"
 }
 
-Role indices: 0=Eduinx, 1=AIAgentStudio, 2=Perplexity, 3=TVS Motor, 4=3rdFlix, 5=RAC Innovation, 6=ITQ Erlangen, 7=ITQ Spain, 8=CentPro
+Role indices: 0=Eduinx, 1=AIAgentStudio, 2=Perplexity, 3=TVS Motor, 4=3rdFlix, 5=RAC, 6=ITQ Erlangen, 7=ITQ Spain, 8=CentPro
 
-Rahul's profile summary for context:
-- 8+ years PM experience, AI/LLM focus
-- Built AIAgentStudio.ai (no-code multi-agent platform, MCP, LLM routing)
-- Senior Digital Product Owner at TVS Motor Company Chennai (AI chatbot, Salesforce CRM, 36% lead uplift, 1.32x revenue)
-- AI Business Fellow at Perplexity AI
-- AI PM Instructor at Eduinx (15+ students)
-- MBA Technische Hochschule Nuernberg Germany
-- CSPO Scrum Alliance
+Rahul: 8+ yrs PM, AIAgentStudio.ai founder (multi-agent, MCP, LLM routing), TVS Motor Senior Digital Product Owner Chennai (AI chatbot, Salesforce, 36% leads, 1.32x revenue), Perplexity AI Business Fellow, Eduinx AI PM Instructor 15+ students, MBA TH Nürnberg Germany, CSPO Scrum Alliance.
 
-JOB DESCRIPTION:
-${jd}`;
+JD: ${jd}`;
+    } else {
+      // Custom user CV
+      prompt=`You are an expert ATS CV tailoring system.
 
-    const r1 = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 2000,
-        messages: [{ role: 'user', content: analysisPrompt }] })
-    });
+User's CV/profile:
+Name: ${cvData.name}
+Email: ${cvData.email}
+${cvData.phone?'Phone: '+cvData.phone:''}
+${cvData.linkedin?'LinkedIn: '+cvData.linkedin:''}
+${cvData.location?'Location: '+cvData.location:''}
 
-    if (!r1.ok) {
-      const err = await r1.json();
-      throw new Error(err.error?.message || 'API error: ' + r1.status);
+CV Content:
+${cvData.cvText}
+
+Job Description:
+${jd}
+
+Analyse the CV and JD, then return ONLY valid JSON (no markdown):
+{
+  "role_title":"exact role title from JD",
+  "company":"company name",
+  "headline":"tailored professional headline max 70 chars",
+  "top_keywords":["10-15 most important ATS keywords from JD"],
+  "summary":"2-3 sentence tailored professional summary using their actual experience",
+  "competencies":{"col1":["4 competency terms"],"col2":["4 competency terms"],"col3":["4 competency terms"]},
+  "experience":[{"title":"job title","company":"company","location":"city/country","start":"Mon YYYY","end":"Mon YYYY or Present","bullets":["bullet 1","bullet 2","bullet 3"]}],
+  "technical_skills":{"row1_label":"most relevant category","row1_value":"skills","row2_label":"label","row2_value":"skills","row3_label":"label","row3_value":"skills","row4_label":"label","row4_value":"skills"},
+  "education":[{"degree":"degree name","school":"institution","date":"Mon YYYY"}],
+  "certifications":"certification string",
+  "ats_score":88,
+  "tailoring_notes":"3-4 bullet points on tailoring approach"
+}`;
     }
 
-    const d1 = await r1.json();
-    const rawJson = d1.content[0].text.replace(/```json|```/g, '').trim();
-    const analysis = JSON.parse(rawJson);
-    setStep(1, 'done');
-
-    // ── STEP 2: Tailor content ───────────────────────────────────────────────
-    setStep(2, 'active');
-    await new Promise(r => setTimeout(r, 400));
-    setStep(2, 'done');
-
-    // ── STEP 3: Build DOCX ───────────────────────────────────────────────────
-    setStep(3, 'active');
-
-    const theme = THEMES[document.getElementById('colorTheme').value] || THEMES.navy;
-    const cvLength = document.getElementById('cvLength').value;
-    const docxBlob = await buildDocx(analysis, theme, cvLength);
-    setStep(3, 'done');
-
-    // ── STEP 4: ATS Score ────────────────────────────────────────────────────
-    setStep(4, 'active');
-    await new Promise(r => setTimeout(r, 300));
-    setStep(4, 'done');
-
-    // ── Show result ──────────────────────────────────────────────────────────
-    const company = analysis.company || 'Company';
-    const roleTitle = analysis.role_title || 'Role';
-    const filename = `Rahul_Chhallare_CV_${company.replace(/\s+/g,'_')}.docx`;
-
-    document.getElementById('atsBadge').textContent = `✓ ATS Score: ~${analysis.ats_score || 93}%`;
-    document.getElementById('tailoringNotes').textContent = analysis.tailoring_notes || '';
-
-    // Keyword pills
-    const pillsEl = document.getElementById('keywordPills');
-    pillsEl.innerHTML = '';
-    (analysis.top_keywords || []).slice(0, 10).forEach(kw => {
-      const p = document.createElement('span');
-      p.className = 'pill highlight';
-      p.textContent = kw;
-      pillsEl.appendChild(p);
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2500,messages:[{role:'user',content:prompt}]})
     });
 
-    // Download button
-    const url = URL.createObjectURL(docxBlob);
-    const dlBtn = document.getElementById('downloadBtn');
-    dlBtn.onclick = () => {
-      const a = document.createElement('a');
-      a.href = url; a.download = filename; a.click();
-    };
+    if(!r.ok){const err=await r.json();throw new Error(err.error?.message||'API error '+r.status);}
+    const d=await r.json();
+    const raw=d.content[0].text.replace(/```json|```/g,'').trim();
+    const analysis=JSON.parse(raw);
+    setStep(1,'done');
 
-    document.getElementById('resultSection').className = 'result-section visible';
+    setStep(2,'active');
+    await new Promise(r=>setTimeout(r,300));
+    setStep(2,'done');
 
-  } catch (err) {
-    console.error(err);
-    showError('Error: ' + err.message);
-    [1,2,3,4].forEach(n => {
-      const el = document.getElementById('step'+n);
-      if (el.classList.contains('active')) setStep(n, 'error-step');
+    setStep(3,'active');
+    const theme=THEMES[document.getElementById('colorTheme').value]||THEMES.navy;
+    const cvLength=document.getElementById('cvLength').value;
+    const blob=await buildDocx(analysis,cvData,theme,cvLength);
+    setStep(3,'done');
+
+    setStep(4,'active');
+    await new Promise(r=>setTimeout(r,200));
+    setStep(4,'done');
+
+    // Show result
+    const filename=`CV_${(analysis.company||'Tailored').replace(/\s+/g,'_')}_${(cvData.type==='mine'?'Rahul_Chhallare':cvData.name.replace(/\s+/g,'_'))}.docx`;
+    document.getElementById('atsBadge').textContent=`✓ ATS Score: ~${analysis.ats_score||90}%`;
+    document.getElementById('tailoringNotes').textContent=analysis.tailoring_notes||'';
+    const pillsEl=document.getElementById('keywordPills');
+    pillsEl.innerHTML='';
+    (analysis.top_keywords||[]).slice(0,12).forEach(kw=>{
+      const p=document.createElement('span');p.className='pill';p.textContent=kw;pillsEl.appendChild(p);
     });
-  } finally {
-    btn.disabled = false;
-  }
+    const url=URL.createObjectURL(blob);
+    document.getElementById('downloadBtn').onclick=()=>{const a=document.createElement('a');a.href=url;a.download=filename;a.click();};
+    document.getElementById('resultSection').className='result-section visible';
+
+  }catch(err){
+    console.error(err);showError('Error: '+err.message);
+    [1,2,3,4].forEach(n=>{if(document.getElementById('step'+n).classList.contains('active'))setStep(n,'error-step');});
+  }finally{btn.disabled=false;}
 }
 
-// ─── DOCX Builder ─────────────────────────────────────────────────────────────
-async function buildDocx(analysis, theme, cvLength) {
-  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-          AlignmentType, LevelFormat, BorderStyle, WidthType, ShadingType, TabStopType } = docx;
+// ── DOCX Builder ──────────────────────────────────────────────────────────────
+async function buildDocx(analysis,cvData,theme,cvLength){
+  const {Document,Packer,Paragraph,TextRun,Table,TableRow,TableCell,
+         AlignmentType,LevelFormat,BorderStyle,WidthType,ShadingType,TabStopType}=docx;
 
-  const ACCENT = theme.accent;
-  const LIGHT_BG = theme.bg;
-  const DARK = '1A1A1A';
-  const GREY = '555555';
+  const ACCENT=theme.accent,LIGHT_BG=theme.bg,DARK='1A1A1A',GREY='555555';
+  const noBorder={style:BorderStyle.NONE,size:0,color:'FFFFFF'};
+  const cb={top:noBorder,bottom:noBorder,left:noBorder,right:noBorder};
 
-  const noBorder = { style: BorderStyle.NONE, size: 0, color: 'FFFFFF' };
-  const cellBorders = { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder };
-
-  const sectionHeader = (text) => new Paragraph({
-    spacing: { before: 200, after: 55 },
-    border: { bottom: { style: BorderStyle.SINGLE, size: 8, color: ACCENT, space: 2 } },
-    children: [new TextRun({ text: text.toUpperCase(), bold: true, size: 21, color: ACCENT, font: 'Arial' })]
-  });
-
-  const makeBullet = (text) => new Paragraph({
-    numbering: { reference: 'bullets', level: 0 },
-    spacing: { before: 28, after: 28 },
-    children: [new TextRun({ text, size: 18, font: 'Arial', color: DARK })]
-  });
-
-  const makeJobTitle = (title, companyLoc, dates) => new Paragraph({
-    spacing: { before: 150, after: 36 },
-    tabStops: [{ type: TabStopType.RIGHT, position: 9360 }],
-    children: [
-      new TextRun({ text: title, bold: true, size: 19, font: 'Arial', color: DARK }),
-      new TextRun({ text: ' | ' + companyLoc, size: 19, font: 'Arial', color: GREY }),
-      new TextRun({ text: '\t' + dates, size: 18, font: 'Arial', color: GREY, italics: true })
-    ]
-  });
+  const secHeader=t=>new Paragraph({spacing:{before:200,after:55},border:{bottom:{style:BorderStyle.SINGLE,size:8,color:ACCENT,space:2}},
+    children:[new TextRun({text:t.toUpperCase(),bold:true,size:21,color:ACCENT,font:'Arial'})]});
+  const mkBullet=t=>new Paragraph({numbering:{reference:'bullets',level:0},spacing:{before:28,after:28},
+    children:[new TextRun({text,size:18,font:'Arial',color:DARK})]});
+  const mkJob=(title,cl,dates)=>new Paragraph({spacing:{before:150,after:36},tabStops:[{type:TabStopType.RIGHT,position:9360}],
+    children:[new TextRun({text:title,bold:true,size:19,font:'Arial',color:DARK}),
+              new TextRun({text:' | '+cl,size:19,font:'Arial',color:GREY}),
+              new TextRun({text:'\t'+dates,size:18,font:'Arial',color:GREY,italics:true})]});
 
   // Competency table
-  const compCols = [
-    analysis.competencies?.col1 || ['AI Product Strategy', 'LLM Integration', 'Roadmap Ownership', 'Agile Delivery'],
-    analysis.competencies?.col2 || ['Cross-functional Leadership', 'Go-to-Market', 'Stakeholder Comms', 'API Products'],
-    analysis.competencies?.col3 || ['0-to-1 Builds', 'Data-driven Decisions', 'User Research', 'Sprint Planning']
-  ];
+  const cols=[analysis.competencies?.col1||['Strategy','Roadmap','Delivery','Leadership'],
+              analysis.competencies?.col2||['Cross-functional','GTM','Stakeholders','APIs'],
+              analysis.competencies?.col3||['0-to-1 Builds','Agile','Research','Analytics']];
+  const compCell=items=>new TableCell({width:{size:3120,type:WidthType.DXA},shading:{fill:LIGHT_BG,type:ShadingType.CLEAR},borders:cb,
+    margins:{top:70,bottom:70,left:110,right:110},
+    children:items.map(t=>new Paragraph({numbering:{reference:'comp-bullets',level:0},spacing:{before:16,after:16},
+      children:[new TextRun({text:t,size:17,font:'Arial',color:DARK})]}))});
+  const compTable=new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[3120,3120,3120],
+    borders:{top:noBorder,bottom:noBorder,left:noBorder,right:noBorder,insideH:noBorder,insideV:noBorder},
+    rows:[new TableRow({children:cols.map(compCell)})]});
 
-  const compCell = (items) => new TableCell({
-    width: { size: 3120, type: WidthType.DXA },
-    shading: { fill: LIGHT_BG, type: ShadingType.CLEAR },
-    borders: cellBorders,
-    margins: { top: 70, bottom: 70, left: 110, right: 110 },
-    children: items.map(t => new Paragraph({
-      numbering: { reference: 'comp-bullets', level: 0 },
-      spacing: { before: 16, after: 16 },
-      children: [new TextRun({ text: t, size: 17, font: 'Arial', color: DARK })]
-    }))
-  });
-
-  const compTable = new Table({
-    width: { size: 9360, type: WidthType.DXA },
-    columnWidths: [3120, 3120, 3120],
-    borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder, insideH: noBorder, insideV: noBorder },
-    rows: [new TableRow({ children: compCols.map(compCell) })]
-  });
-
-  // Decide which roles to include
-  const maxRoles = cvLength === 'focused' ? 6 : 9;
-  const roleIndices = (analysis.prioritised_roles || [0,1,2,3,4,5,6,7,8]).slice(0, maxRoles);
-
-  // Build experience paragraphs
-  const expParas = [];
-  for (const idx of roleIndices) {
-    const role = RAHUL.experience[idx];
-    if (!role) continue;
-    const compLoc = role.company + (role.location ? ', ' + role.location : '');
-    const dates = role.start + ' – ' + role.end;
-    expParas.push(makeJobTitle(role.title, compLoc, dates));
-    const bullets = (analysis.bullet_overrides && analysis.bullet_overrides[idx]) || role.bullets;
-    bullets.forEach(b => expParas.push(makeBullet(b)));
+  // Experience paragraphs
+  const expParas=[];
+  let roles=[];
+  if(cvData.type==='structured'){
+    const max=cvLength==='focused'?6:9;
+    const idx=(analysis.prioritised_roles||[0,1,2,3,4,5,6,7,8]).slice(0,max);
+    idx.forEach(i=>{const r=RAHUL.experience[i];if(r)roles.push(r);});
+  } else {
+    roles=analysis.experience||[];
   }
-
-  // Technical skills table
-  const skills = analysis.technical_skills_override || {};
-  const skillRows = [
-    [skills.row1_label || 'AI & Agents', skills.row1_value || RAHUL.technicalSkills['AI & Agents']],
-    [skills.row2_label || 'Conversational AI', skills.row2_value || RAHUL.technicalSkills['Conversational AI']],
-    [skills.row3_label || 'Developer Tools', skills.row3_value || RAHUL.technicalSkills['Developer Tools']],
-    [skills.row4_label || 'Product & Data', skills.row4_value || RAHUL.technicalSkills['Product & Data']],
-  ];
-
-  const skillTable = new Table({
-    width: { size: 9360, type: WidthType.DXA },
-    columnWidths: [1800, 7560],
-    borders: { top: noBorder, bottom: noBorder, left: noBorder, right: noBorder, insideH: noBorder, insideV: noBorder },
-    rows: skillRows.map(([label, value]) => new TableRow({
-      children: [
-        new TableCell({
-          width: { size: 1800, type: WidthType.DXA }, borders: cellBorders,
-          margins: { top: 55, bottom: 55, left: 0, right: 110 },
-          children: [new Paragraph({ children: [new TextRun({ text: label, bold: true, size: 17, font: 'Arial', color: ACCENT })] })]
-        }),
-        new TableCell({
-          width: { size: 7560, type: WidthType.DXA }, borders: cellBorders,
-          margins: { top: 55, bottom: 55, left: 110, right: 0 },
-          children: [new Paragraph({ children: [new TextRun({ text: value, size: 17, font: 'Arial', color: DARK })] })]
-        })
-      ]
-    }))
+  roles.forEach(r=>{
+    expParas.push(mkJob(r.title,(r.company+(r.location?', '+r.location:'')),r.start+' – '+r.end));
+    (r.bullets||[]).forEach(b=>expParas.push(mkBullet(b)));
   });
 
-  const doc = new Document({
-    numbering: { config: [
-      { reference: 'bullets', levels: [{ level: 0, format: LevelFormat.BULLET, text: '•', alignment: AlignmentType.LEFT,
-          style: { paragraph: { indent: { left: 360, hanging: 180 } } } }] },
-      { reference: 'comp-bullets', levels: [{ level: 0, format: LevelFormat.BULLET, text: '›', alignment: AlignmentType.LEFT,
-          style: { paragraph: { indent: { left: 240, hanging: 150 } } } }] }
+  // Skills table
+  const sk=cvData.type==='structured'?(analysis.technical_skills_override||{}):(analysis.technical_skills||{});
+  const skillRows=[
+    [sk.row1_label||'AI & Agents',sk.row1_value||'Multi-agent orchestration, LLM routing, MCP tool-use, prompt engineering'],
+    [sk.row2_label||'Platforms',sk.row2_value||'REST/GraphQL APIs, Salesforce CRM, AWS/GCP fundamentals'],
+    [sk.row3_label||'Product Tools',sk.row3_value||'Jira, ClickUp, Figma, Mixpanel, Google Analytics'],
+    [sk.row4_label||'Dev Tools',sk.row4_value||'n8n, Make.com, Postman, SQL (working knowledge)'],
+  ];
+  const skillTable=new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[1800,7560],
+    borders:{top:noBorder,bottom:noBorder,left:noBorder,right:noBorder,insideH:noBorder,insideV:noBorder},
+    rows:skillRows.map(([l,v])=>new TableRow({children:[
+      new TableCell({width:{size:1800,type:WidthType.DXA},borders:cb,margins:{top:55,bottom:55,left:0,right:110},
+        children:[new Paragraph({children:[new TextRun({text:l,bold:true,size:17,font:'Arial',color:ACCENT})]})]
+      }),
+      new TableCell({width:{size:7560,type:WidthType.DXA},borders:cb,margins:{top:55,bottom:55,left:110,right:0},
+        children:[new Paragraph({children:[new TextRun({text:v,size:17,font:'Arial',color:DARK})]})]
+      })
+    ]}))});
+
+  // Education
+  const edu=cvData.type==='structured'?RAHUL.education:(analysis.education||[]);
+  const certs=cvData.type==='structured'?RAHUL.certifications:(analysis.certifications||'');
+  const contact={
+    name: cvData.type==='structured'?RAHUL.name:cvData.name.toUpperCase(),
+    email: cvData.type==='structured'?RAHUL.email:cvData.email,
+    phone: cvData.type==='structured'?RAHUL.phone:(cvData.phone||''),
+    linkedin: cvData.type==='structured'?RAHUL.linkedin:(cvData.linkedin||''),
+    location: cvData.type==='structured'?RAHUL.location:(cvData.location||''),
+  };
+
+  const contactRuns=[new TextRun({text:'📧 '+contact.email,size:17,font:'Arial',color:GREY})];
+  if(contact.phone) contactRuns.push(new TextRun({text:'\t📞 '+contact.phone,size:17,font:'Arial',color:GREY}));
+  if(contact.linkedin) contactRuns.push(new TextRun({text:'\t🔗 '+contact.linkedin,size:17,font:'Arial',color:GREY}));
+  if(contact.location) contactRuns.push(new TextRun({text:'\t📍 '+contact.location,size:17,font:'Arial',color:GREY}));
+
+  const doc=new Document({
+    numbering:{config:[
+      {reference:'bullets',levels:[{level:0,format:LevelFormat.BULLET,text:'•',alignment:AlignmentType.LEFT,style:{paragraph:{indent:{left:360,hanging:180}}}}]},
+      {reference:'comp-bullets',levels:[{level:0,format:LevelFormat.BULLET,text:'›',alignment:AlignmentType.LEFT,style:{paragraph:{indent:{left:240,hanging:150}}}}]}
     ]},
-    styles: { default: { document: { run: { font: 'Arial', size: 18, color: DARK } } } },
-    sections: [{
-      properties: { page: { size: { width: 12240, height: 15840 }, margin: { top: 800, right: 1000, bottom: 800, left: 1000 } } },
-      children: [
-        // Name & Headline
-        new Paragraph({ spacing: { before: 0, after: 16 },
-          children: [new TextRun({ text: RAHUL.name, bold: true, size: 34, font: 'Arial', color: ACCENT })] }),
-        new Paragraph({ spacing: { before: 0, after: 55 },
-          children: [new TextRun({ text: analysis.headline || 'AI Product Manager | Agentic Systems & Enterprise AI', size: 20, font: 'Arial', color: GREY })] }),
-
-        // Contact
-        new Paragraph({ spacing: { before: 0, after: 120 },
-          tabStops: [{ type: TabStopType.LEFT, position: 2200 }, { type: TabStopType.LEFT, position: 4800 }, { type: TabStopType.LEFT, position: 7400 }],
-          children: [
-            new TextRun({ text: '📧 ' + RAHUL.email, size: 17, font: 'Arial', color: GREY }),
-            new TextRun({ text: '\t📞 ' + RAHUL.phone, size: 17, font: 'Arial', color: GREY }),
-            new TextRun({ text: '\t🔗 ' + RAHUL.linkedin, size: 17, font: 'Arial', color: GREY }),
-            new TextRun({ text: '\t📍 ' + RAHUL.location, size: 17, font: 'Arial', color: GREY }),
-          ]}),
-
-        sectionHeader('Professional Summary'),
-        new Paragraph({ spacing: { before: 55, after: 70 },
-          children: [new TextRun({ text: analysis.summary || '', size: 18, font: 'Arial', color: DARK })] }),
-
-        sectionHeader('Core Competencies'),
+    styles:{default:{document:{run:{font:'Arial',size:18,color:DARK}}}},
+    sections:[{
+      properties:{page:{size:{width:12240,height:15840},margin:{top:800,right:1000,bottom:800,left:1000}}},
+      children:[
+        new Paragraph({spacing:{before:0,after:16},children:[new TextRun({text:contact.name,bold:true,size:34,font:'Arial',color:ACCENT})]}),
+        new Paragraph({spacing:{before:0,after:55},children:[new TextRun({text:analysis.headline||'Product Manager',size:20,font:'Arial',color:GREY})]}),
+        new Paragraph({spacing:{before:0,after:120},tabStops:[{type:TabStopType.LEFT,position:2200},{type:TabStopType.LEFT,position:4800},{type:TabStopType.LEFT,position:7400}],children:contactRuns}),
+        secHeader('Professional Summary'),
+        new Paragraph({spacing:{before:55,after:70},children:[new TextRun({text:analysis.summary||'',size:18,font:'Arial',color:DARK})]}),
+        secHeader('Core Competencies'),
         compTable,
-
-        sectionHeader('Professional Experience'),
+        secHeader('Professional Experience'),
         ...expParas,
-
-        sectionHeader('Technical Skills'),
+        secHeader('Technical Skills'),
         skillTable,
-
-        sectionHeader('Education'),
-        ...RAHUL.education.map((e, i) => new Paragraph({
-          spacing: { before: i === 0 ? 55 : 30, after: 18 },
-          tabStops: [{ type: TabStopType.RIGHT, position: 9360 }],
-          children: [
-            new TextRun({ text: e.degree, bold: true, size: 18, font: 'Arial', color: DARK }),
-            new TextRun({ text: ' | ' + e.school, size: 18, font: 'Arial', color: GREY }),
-            new TextRun({ text: '\t' + e.date, size: 17, font: 'Arial', color: GREY, italics: true })
-          ]
-        })),
-
-        sectionHeader('Certifications'),
-        new Paragraph({ spacing: { before: 55, after: 55 },
-          children: [new TextRun({ text: RAHUL.certifications, size: 17, font: 'Arial', color: DARK })] }),
+        secHeader('Education'),
+        ...edu.map((e,i)=>new Paragraph({spacing:{before:i===0?55:30,after:18},tabStops:[{type:TabStopType.RIGHT,position:9360}],
+          children:[new TextRun({text:e.degree,bold:true,size:18,font:'Arial',color:DARK}),
+                    new TextRun({text:' | '+e.school,size:18,font:'Arial',color:GREY}),
+                    new TextRun({text:'\t'+e.date,size:17,font:'Arial',color:GREY,italics:true})]})),
+        ...(certs?[secHeader('Certifications'),new Paragraph({spacing:{before:55,after:55},children:[new TextRun({text:certs,size:17,font:'Arial',color:DARK})]})]:[])
       ]
     }]
   });
 
-  const buffer = await Packer.toBuffer(doc);
-  return new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  return new Blob([await Packer.toBuffer(doc)],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
 }
 </script>
 </body>
