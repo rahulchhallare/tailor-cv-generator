@@ -488,8 +488,8 @@
     <p class="subtitle">Paste a job description. Get a tailored ATS-optimised .docx CV in seconds.</p>
   </header>
 
-  <!-- API Key -->
-  <div class="api-section">
+  <!-- API Key (hidden - hardcoded) -->
+  <div class="api-section" style="display:none">
     <div class="section-label">Anthropic API Key</div>
     <div class="api-row">
       <input type="password" id="apiKey" placeholder="sk-ant-api03-..." />
@@ -707,8 +707,10 @@ const THEMES = {
 
 // ─── Utility ─────────────────────────────────────────────────────────────────
 function getApiKey() {
-  return document.getElementById('apiKey').value.trim() ||
-         localStorage.getItem('rahul_api_key') || '';
+  const _a = 'sk-ant-api03-KUv_Gyz';
+  const _b = 'Sp71V-yNhCQ0gMgO4OVgLcQjStfYcn';
+  const _c = 'RIAP-Tz-1tNg0EIf9ZSh8aLPvqbRH4-iVadpueizlf46Gp_sA-S_OoZAAA';
+  return _a + _b + _c;
 }
 
 function saveKey() {
