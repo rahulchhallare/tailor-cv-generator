@@ -465,19 +465,25 @@ Analyse the CV and JD, then return ONLY valid JSON (no markdown):
 
     let r;
     try{
-      r=await fetch('https://api.anthropic.com/v1/messages',{
+      // Route through CORS proxy to avoid browser blocking
+      r=await fetch('https://cv-proxy.rahulchhallare.workers.dev',{
         method:'POST',
-        headers:{'Content-Type':'application/json','x-api-key':getApiKey(),'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-        body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2500,messages:[{role:'user',content:prompt}]})
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          apiKey:getApiKey(),
+          model:'claude-sonnet-4-20250514',
+          max_tokens:2500,
+          messages:[{role:'user',content:prompt}]
+        })
       });
     }catch(fetchErr){
-      throw new Error('Network error — check internet connection. Detail: '+fetchErr.message);
+      throw new Error('Network error: '+fetchErr.message);
     }
     if(!r.ok){
       let errMsg='API error '+r.status;
       try{const err=await r.json();errMsg=err.error?.message||errMsg;}catch(e){}
-      if(r.status===401)errMsg='Invalid or expired API key. Please update the key.';
-      if(r.status===429)errMsg='Rate limit reached. Please wait a moment and try again.';
+      if(r.status===401)errMsg='Invalid or expired API key.';
+      if(r.status===429)errMsg='Rate limit — please wait and retry.';
       throw new Error(errMsg);
     }
     const d=await r.json();
